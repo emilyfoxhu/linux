@@ -23,6 +23,8 @@
 #include "mmu.h"
 #include "trace.h"
 #include "pmu.h"
+/*add*/
+#include <asm/atomic.h>
 
 /*
  * Unlike "struct cpuinfo_x86.x86_capability", kvm_cpu_caps doesn't need to be
@@ -30,6 +32,12 @@
  */
 u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 EXPORT_SYMBOL_GPL(kvm_cpu_caps);
+
+/*Add here*/
+atomic64_t exit_counters = ATOMIC64_INIT(0);
+EXPORT_SYMBOL(exit_counters);
+atomic64_t exit_duration = ATOMIC64_INIT(0);
+EXPORT_SYMBOL(exit_duration);
 
 static u32 xstate_required_size(u64 xstate_bv, bool compacted)
 {
@@ -1105,10 +1113,31 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
-
+	
 	eax = kvm_rax_read(vcpu);
 	ecx = kvm_rcx_read(vcpu);
-	kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
+	
+	/*Add here*/
+	
+	if ( eax == 0x4fffffff ) {
+		printk(KERN_INFO "CMPE283-2: Update the registers:");
+		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, true);
+		printk(KERN_INFO "Update exit counters to eax: %llu\n", atomic64_read(&exit_counters));
+		eax = atomic64_read(&exit_counters);
+		printk(KERN_INFO "eax=%u\n", eax);
+		/*Store the high 32bit of the total time spent processing all exits in %ebx*/
+		printk(KERN_INFO "Exit duration=%llu\n", atomic64_read(&exit_duration));
+		ebx = (atomic64_read(&exit_duration) >> 32);
+		printk(KERN_INFO "Updated ebx exit time:%u\n", ebx);
+		/*Store the low 32bit of the total time spent processing all exits in %ecx*/
+		ecx = (atomic64_read(&exit_duration) & 0xFFFFFFFF);
+		printk(KERN_INFO "updated ecx exit time:%u\n", ecx);
+
+	} 
+	else {
+		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
+	}
+	
 	kvm_rax_write(vcpu, eax);
 	kvm_rbx_write(vcpu, ebx);
 	kvm_rcx_write(vcpu, ecx);
