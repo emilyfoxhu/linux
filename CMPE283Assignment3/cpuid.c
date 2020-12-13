@@ -34,6 +34,8 @@ u32 kvm_cpu_caps[NCAPINTS] __read_mostly;
 EXPORT_SYMBOL_GPL(kvm_cpu_caps);
 
 /*Add here*/
+atomic64_t exit_counter[69] = {0};
+EXPORT_SYMBOL(exit_counter);
 atomic64_t exit_counters = ATOMIC64_INIT(0);
 EXPORT_SYMBOL(exit_counters);
 atomic64_t exit_duration = ATOMIC64_INIT(0);
@@ -1110,7 +1112,8 @@ EXPORT_SYMBOL_GPL(kvm_cpuid);
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
 	u32 eax, ebx, ecx, edx;
-
+	uint32_t count_num;
+	
 	if (cpuid_fault_enabled(vcpu) && !kvm_require_cpl(vcpu, 0))
 		return 1;
 	
@@ -1132,8 +1135,38 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		/*Store the low 32bit of the total time spent processing all exits in %ecx*/
 		ecx = (atomic64_read(&exit_duration) & 0xFFFFFFFF);
 		printk(KERN_INFO "updated ecx exit time:%u\n", ecx);
-
 	} 
+	
+	/*283-3 Add here*/
+	else if ( eax == 0x4ffffffe) {
+		//sdm exit from 0-68
+		if (ecx >= 0 && ecx <= 68)
+		{
+			//not defined in sdm
+		        if (ecx==35 || ecx==38 || ecx==42 || ecx==65) {
+		               printk(KERN_INFO "exit number %u is not defined in SDM", ecx);
+			       eax=0x00000000;
+			       ebx=0x00000000;
+			       ecx=0x00000000;
+			       edx=0xFFFFFFFF;
+		        }
+		        //Return the number of exits in %eax for the exit number provided in %ecx
+		        else {
+		        	eax = atomic64_read(&exit_counter[ecx]);
+		       	count_num = atomic64_read(&exit_counter[ecx]);
+		       	printk(KERN_INFO "exit number: %d, exits: %d\n", ecx, count_num);
+		        }
+		    
+		}
+		else {
+		       printk(KERN_INFO "exit number=%u is not defined in SDM", ecx);
+		       eax=0x00000000;
+		       ebx=0x00000000;
+		       ecx=0x00000000;
+		       edx=0xFFFFFFFF;
+		}
+	}
+	
 	else {
 		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	}
