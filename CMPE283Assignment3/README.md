@@ -27,6 +27,7 @@ o	Verify proper output
 > sudo apt-get install cpuid  
 ![cpuid](https://user-images.githubusercontent.com/33148410/102020770-2b5a6100-3d30-11eb-9255-a62286e0cbf7.jpg)  
 3. Edit 'linux/arch/x86/kvm/vmx/vmx.c' and 'linux/arch/x86/kvm/cpuid.c' files.  
+In cpuid.c, create a new CPUID leaf 0x4FFFFFFE, inside the leaf, if exit type is not defined in SDM, returns 0 for eax,ebx,ecx, returns 0xFFFFFFFF for edx. If exit type is not enabled in KVM,  returns 0 in all eax-edx. Else, return exit number to eax.  
 4. Rebuild the code by running:  
 > make && make modules && make modules_install && make install (it takes shorter time, about 5-10 minutes)  
 5. Open virt-manager by running:  
