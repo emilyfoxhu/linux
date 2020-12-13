@@ -43,7 +43,7 @@ No it doesn't.
 - Or are there more exits performed during certain VM operations?  
 Yes, there are more exits performed during some VM operations such as I/O operations.  
 - Approximately how many exits does a full VM boot entail?  
-About 13 exits.  
+About 1,031,093 exits.  
 - Of the exit types defined in the SDM, which are the most frequent? Least?  
 Most frequent exit type is external interrupt.  
-The least frequent exit types are many, such as  
+The least frequent exit types are many, such as INT signal, SMI, interrupt window,etc. 
