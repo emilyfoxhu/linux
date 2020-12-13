@@ -73,6 +73,8 @@ MODULE_LICENSE("GPL");
 /*add*/
 extern atomic64_t exit_counters;
 extern atomic64_t exit_duration;
+/*283-3 add 69 different exits counter*/
+extern atomic64_t exit_counter[69];
 
 #ifdef MODULE
 static const struct x86_cpu_id vmx_cpu_id[] = {
@@ -5947,7 +5949,9 @@ static int vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	u64 start_time = rdtsc();
 	//counter
 	atomic64_inc(&exit_counters);
-
+	//exits reason incre
+	if (exit_reason < 69)
+		atomic64_inc(&exit_counter[exit_reason]);
 	/*
 	 * Flush logged GPAs PML buffer, this will make dirty_bitmap more
 	 * updated. Another good is, in kvm_vm_ioctl_get_dirty_log, before
