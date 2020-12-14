@@ -35,7 +35,7 @@ In cpuid.c, create a new CPUID leaf 0x4FFFFFFE, inside the leaf, if exit type is
 6. Enter the guest vm1, and test functionality, compile and verify results:  
 > gcc test-3.c -o test-3  
 ./test-3 1  
-![exits](https://user-images.githubusercontent.com/33148410/102020772-2c8b8e00-3d30-11eb-9a81-24d2d3d60125.jpg)  
+![exits](https://user-images.githubusercontent.com/33148410/102027990-b6515080-3d5c-11eb-891d-1e1d173c60ef.jpg)  
 
 #### Q3:Comment on the frequency of exits:
 - does the number of exits increase at a stable rate?  
