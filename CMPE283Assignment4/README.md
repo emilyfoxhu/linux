@@ -25,13 +25,15 @@ o	insmod /lib/modules/XXX/kernel/arch/x86/kvm/kvm-intel.ko ept=0
 ![insmod](https://user-images.githubusercontent.com/33148410/102028342-81de9400-3d5e-11eb-9498-8f1f3f529c71.jpg)  
 3. Open virt-manager, enter the guest vm1, and test functionality, compile and verify results:  
 > ./test  
-Output of “with ept” (nested paging):  
-
+Before remove and reload the module, the output of “with ept” (nested paging):  
+![1](https://user-images.githubusercontent.com/33148410/102042132-efea8180-3d85-11eb-8ee8-5bb21c7e4e37.jpg)  
 Output of “without ept” (shadow paging):  
+![2](https://user-images.githubusercontent.com/33148410/102042134-f11bae80-3d85-11eb-8e8f-c6b71aa8aef0.jpg)  
 
 #### Q3:
 - What did you learn from the count of exits? Was the count what you expected? If not, why not?  
+The number of exits in shadow paging is more than nested paging. That is what we expected, because when using nested paging, guest vm will only exit due to EPT voilations. And when using shadow paging, guest vm could exit due to many types of exits, such as access to CR3, page fault, etc. and vmm needs to emulate page table and CR3 for guest vm.  
 
 - What changed between the two runs (ept vs no-ept)？  
-
+There are more number of exits for exit number 1 when using shadowing paging, which is no-ept mode. The rest of exit types also get more exits when using shadow paging.   
 
